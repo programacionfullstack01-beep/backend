@@ -10,7 +10,8 @@ const app = express();
 const port = process.env.PORT || 4020;
 
 // CORS básico (útil si el frontend corre en otro puerto, p. ej. Live Server)
-// - En producción, recomienda setear CORS_ORIGINS="https://tu-front.com,https://otro.com"
+// - Si defines CORS_ORIGINS, se restringe a esos orígenes (separados por coma).
+// - Si NO defines CORS_ORIGINS, permite cualquier origen (modo dev-friendly).
 const corsOrigins = (process.env.CORS_ORIGINS || '')
   .split(',')
   .map((s) => s.trim())
@@ -18,11 +19,10 @@ const corsOrigins = (process.env.CORS_ORIGINS || '')
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const isProd = process.env.NODE_ENV === 'production';
 
   if (origin) {
     const allowed =
-      corsOrigins.length > 0 ? corsOrigins.includes(origin) : !isProd;
+      corsOrigins.length > 0 ? corsOrigins.includes(origin) : true;
 
     if (allowed) {
       res.setHeader('Access-Control-Allow-Origin', origin);
