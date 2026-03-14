@@ -50,11 +50,11 @@ const notesRouter = require('./routes/notes');
 app.use('/notes', notesRouter);
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/login/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend_PF/index.html'));
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/login/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend_PF/index.html'));
 });
 
 // Cualquier ruta no API vuelve al login como página inicial.
