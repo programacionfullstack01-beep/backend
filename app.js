@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const path = require('path');
+const fs = require('fs');
 
 // Cargar variables de entorno (desde backend_PF/.env si existe, sin sobreescribir env vars del sistema)
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -39,9 +40,42 @@ app.use((req, res, next) => {
 // Middleware para entender JSON
 app.use(express.json());
 
+function firstExistingPath(candidates) {
+  for (const candidate of candidates) {
+    try {
+      if (candidate && fs.existsSync(candidate)) return candidate;
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
 // Servir archivos estáticos desde el directorio del frontend
-// Nota: en este repo el folder se llama 'frondend' (así está escrito en disco).
-app.use(express.static(path.join(__dirname, '../frondend')));
+// (Tolerante a nombres distintos para evitar crashes en deploys)
+const frontendDir = process.env.FRONTEND_DIR
+  ? path.resolve(__dirname, process.env.FRONTEND_DIR)
+  : firstExistingPath([
+    path.join(__dirname, '../frondend'),
+    path.join(__dirname, '../frontend'),
+    path.join(__dirname, '../frontend_PF'),
+    path.join(__dirname, '../frondend_PF')
+  ]);
+
+if (frontendDir) {
+  app.use(express.static(frontendDir));
+  console.log('Frontend estático:', frontendDir);
+} else {
+  console.warn('No se encontró directorio de frontend para servir estáticos. Define FRONTEND_DIR si aplica.');
+}
+
+const indexFile = firstExistingPath([
+  frontendDir ? path.join(frontendDir, 'index.html') : null,
+  path.join(__dirname, '../frondend/index.html'),
+  path.join(__dirname, '../frontend/index.html'),
+  path.join(__dirname, '../frontend_PF/index.html'),
+  path.join(__dirname, '../frondend_PF/index.html')
+]);
 
 // Conectar a MongoDB
 if (!process.env.MONGODB_URI) {
@@ -83,15 +117,17 @@ app.use('/notes', notesRouter);
 app.use('/api/notes', notesRouter);
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frondend/index.html'));
+  if (!indexFile) return res.status(500).send('No se encontró index.html del frontend en el servidor.');
+  res.sendFile(indexFile);
 });
 
 app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frondend/index.html'));
+  if (!indexFile) return res.status(500).send('No se encontró index.html del frontend en el servidor.');
+  res.sendFile(indexFile);
 });
 
 // Cualquier ruta no API vuelve al login como página inicial.
-app.get(/^\/(?!auth|students|teachers|courses|groups|notes).*/, (req, res) => {
+app.get(/^\/(?!api|auth|students|teachers|courses|groups|notes).*/, (req, res) => {
   res.redirect('/');
 });
 
