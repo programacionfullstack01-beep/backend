@@ -6,7 +6,6 @@ const Course = require('../models/Course');
 router.post('/', async (req, res) => {
   try {
     console.log("Iniciado creación del curso:", req.body)
-        console.log("Error consulta de cursos :", err.message )
 
     const course = new Course({
       name: req.body.name,

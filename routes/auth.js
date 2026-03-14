@@ -75,4 +75,56 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// Cambiar contraseña (admin)
+// POST /auth/change-password (también disponible en /api/auth/change-password por alias en app.js)
+router.post('/change-password', async (req, res) => {
+  const role = (req.body.role || '').trim().toLowerCase();
+  const user = (req.body.user || '').trim();
+  const newPassword = (req.body.newPassword || '').trim();
+
+  const isTeacher = role === 'profesor' || role === 'teacher';
+  const isStudent = role === 'estudiante' || role === 'student';
+
+  if (!user || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'user y newPassword son requeridos'
+    });
+  }
+
+  if (!isTeacher && !isStudent) {
+    return res.status(400).json({
+      success: false,
+      message: 'role debe ser profesor/estudiante'
+    });
+  }
+
+  try {
+    if (isTeacher) {
+      const teacher = await Teacher.findOneAndUpdate(
+        { user },
+        { password: newPassword },
+        { new: true }
+      );
+      if (!teacher) {
+        return res.status(404).json({ success: false, message: 'Profesor no encontrado' });
+      }
+      return res.json({ success: true, message: 'Contraseña actualizada' });
+    }
+
+    const student = await Student.findOneAndUpdate(
+      { user },
+      { password: newPassword },
+      { new: true }
+    );
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+    return res.json({ success: true, message: 'Contraseña actualizada' });
+  } catch (error) {
+    console.log("error al cambiar contraseña:", error.message);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router;
