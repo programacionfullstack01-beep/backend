@@ -86,6 +86,33 @@ if (!process.env.MONGODB_URI) {
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('Conectado a la base de datos MongoDB');
+
+    // Migración opcional: eliminar índice legacy que impedía varias notas por curso/grupo.
+    // Activar solo una vez con: DROP_LEGACY_NOTE_INDEX=true
+    if (String(process.env.DROP_LEGACY_NOTE_INDEX || '').toLowerCase() === 'true') {
+      (async () => {
+        try {
+          const Note = require('./models/Note');
+          const indexes = await Note.collection.indexes();
+          const legacy = indexes.find((idx) => {
+            const key = idx?.key || {};
+            return idx?.unique === true &&
+              key.student === 1 &&
+              key.group === 1 &&
+              Object.keys(key).length === 2;
+          });
+
+          if (legacy?.name) {
+            await Note.collection.dropIndex(legacy.name);
+            console.log(`Índice legacy eliminado en notes: ${legacy.name}`);
+          } else {
+            console.log('No se encontró índice legacy (student+group) en notes.');
+          }
+        } catch (err) {
+          console.warn('No se pudo eliminar el índice legacy de notes:', err?.message || err);
+        }
+      })();
+    }
   })
   .catch((err) => {
     console.error('Error al conectar a la base de datos:', err);
@@ -111,6 +138,10 @@ app.use('/api/courses', coursesRouter);
 const groupsRouter = require('./routes/groups');
 app.use('/groups', groupsRouter);
 app.use('/api/groups', groupsRouter);
+
+const assignmentsRouter = require('./routes/assignments');
+app.use('/assignments', assignmentsRouter);
+app.use('/api/assignments', assignmentsRouter);
 
 const notesRouter = require('./routes/notes');
 app.use('/notes', notesRouter);

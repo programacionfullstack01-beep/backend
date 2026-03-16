@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Student = require('../models/Student');
+const Assignment = require('../models/Assignment');
 
 
 // CREAR un nuevo estudiante
@@ -55,13 +56,7 @@ router.get('/:studentId/groups', async (req, res) => {
     console.log('Iniciar consulta de grupo de estudiantes:', req.body);
 
     const student = await Student.findById(req.params.studentId)
-      .populate({
-        path: 'groups',
-        populate: [ // Populado anidado
-          { path: 'course' },
-          { path: 'teacher' }
-        ]
-      });
+      .populate('groups');
 
     if (!student) {
       return res.status(404).json({ message: 'Estudiantes no encontrado' });
@@ -70,6 +65,25 @@ router.get('/:studentId/groups', async (req, res) => {
     res.json(student.groups);
   } catch (err) {
     console.log('Error consulta los grupos de estudiantes:', err.message);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// CONSULTAR las asignaciones (curso+grupo+profesor) de un estudiante
+router.get('/:studentId/assignments', async (req, res) => {
+  try {
+    console.log('Iniciar consulta de asignaciones de estudiantes:', req.body);
+    const student = await Student.findById(req.params.studentId);
+    if (!student) return res.status(404).json({ message: 'Estudiantes no encontrado' });
+
+    const assignments = await Assignment.find({ _id: { $in: student.assignments || [] } })
+      .populate('group')
+      .populate('course')
+      .populate('teacher');
+
+    res.json(assignments);
+  } catch (err) {
+    console.log('Error consulta las asignaciones de estudiantes:', err.message);
     res.status(500).json({ message: err.message });
   }
 });

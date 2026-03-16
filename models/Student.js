@@ -30,6 +30,10 @@ const studentSchema = new mongoose.Schema({
   groups: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Group'
+  }],
+  assignments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Assignment'
   }]
 });
 

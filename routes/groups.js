@@ -1,29 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const Group = require('../models/Group');
-const Student = require('../models/Student'); // Necesitamos el modelo de Estudiante
+const Student = require('../models/Student');
 
-// CREAR un nuevo grupo (y así asignar un profesor a un curso)
+// CREAR un nuevo grupo (solo nombre + descripción)
 router.post('/', async (req, res) => {
   try {
     console.log("Creando un nuevo grupos :", req.body)
     const group = new Group({
       name: req.body.name,
-      course: req.body.courseId,
-      teacher: req.body.teacherId
+      description: req.body.description
     });
     const newGroup = await group.save();
     res.status(201).json(newGroup);
   } catch (err) {
+    if (err.code === 11000) {
+      return res.status(400).json({ message: 'El nombre del grupo ya existe' });
+    }
     res.status(400).json({ message: err.message });
   }
 });
 
-// CONSULTAR todos los grupos (puede ser útil para admin)
+// CONSULTAR todos los grupos
 router.get('/', async (req, res) => {
   try {
     console.log("Consultando todos grupos :", req.body)
-    const groups = await Group.find().populate('course').populate('teacher');
+    const groups = await Group.find();
     res.json(groups);
   } catch (err) {
     console.log("Error consulta todos los grupos:", err.message)

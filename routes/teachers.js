@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Teacher = require('../models/Teacher');
-const Group = require('../models/Group');
+const Assignment = require('../models/Assignment');
 // CREAR un nuevo profesor
 router.post('/', async (req, res) => {
   try {
@@ -61,19 +61,24 @@ router.get('/', async (req, res) => {
   }
 });
 
-// CONSULTAR los grupos (y sus cursos) de un profesor específico
-router.get('/:teacherId/groups', async (req, res) => {
+// CONSULTAR las asignaciones (grupo + curso) de un profesor específico
+router.get('/:teacherId/assignments', async (req, res) => {
   try {
     console.log('Consultando los grupos del profesor:', req.body);
-    const groups = await Group.find({ teacher: req.params.teacherId }).populate('course');
-    if (!groups) {
-      return res.status(400).json({ message: 'No se encontraron grupos para este profesor' });
-    }
-    res.json(groups);
+    const assignments = await Assignment.find({ teacher: req.params.teacherId })
+      .populate('group')
+      .populate('course');
+    res.json(assignments);
   } catch (err) {
     console.log('Error Consultando grupos de profesores:', err.message);
     res.status(500).json({ message: err.message });
   }
+});
+
+// Alias legacy
+router.get('/:teacherId/groups', async (req, res) => {
+  req.url = `/${req.params.teacherId}/assignments`;
+  return router.handle(req, res);
 });
 
 

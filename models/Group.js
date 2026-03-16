@@ -1,23 +1,15 @@
 const mongoose = require('mongoose');
 
 const groupSchema = new mongoose.Schema({
-  name: { // e.g., "Grupo 1", "Sección A"
+  name: { // e.g., "10A", "Sección A"
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
-  course: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
-    required: true
+  description: {
+    type: String,
+    required: false
   },
-  teacher: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Teacher',
-    required: true
-  }
 });
-
-// Para evitar que el mismo profesor de el mismo grupo del mismo curso dos veces.
-groupSchema.index({ course: 1, teacher: 1, name: 1 }, { unique: true });
 
 module.exports = mongoose.model('Group', groupSchema);

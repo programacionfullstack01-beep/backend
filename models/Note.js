@@ -8,7 +8,11 @@ const noteSchema = new mongoose.Schema({
   },
   group: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Group',
+    ref: 'Assignment',
+    required: true
+  },
+  activityName: {
+    type: String,
     required: true
   },
   grade: {
@@ -19,7 +23,7 @@ const noteSchema = new mongoose.Schema({
   }
 });
 
-// To prevent a student from having multiple notes for the same group
-noteSchema.index({ student: 1, group: 1 }, { unique: true });
+// Evitar duplicados: misma actividad para el mismo estudiante en la misma asignación
+noteSchema.index({ student: 1, group: 1, activityName: 1 }, { unique: true });
 
 module.exports = mongoose.model('Note', noteSchema);

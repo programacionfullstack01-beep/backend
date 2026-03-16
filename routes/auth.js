@@ -36,6 +36,7 @@ router.post('/login', async (req, res) => {
 
         return res.json({
           success: true,
+          id: teacher._id.toString(),
           role: 'teacher',
           name: `${teacher.name} ${teacher.lastname}`.trim(),
           message: 'Authentication successful'
@@ -55,6 +56,7 @@ router.post('/login', async (req, res) => {
 
         return res.json({
           success: true,
+          id: student._id.toString(),
           role: 'student',
           name: `${student.name} ${student.lastname}`.trim(),
           message: 'Authentication successful'
