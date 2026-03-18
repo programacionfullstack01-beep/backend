@@ -41,6 +41,9 @@ Comandos típicos en Render (si Root Directory es `backend_PF`):
 - Build: `npm install`
 - Start: `npm start`
 
+## DESPLIEGUE DE APLICACIÓN:
+  - https://backend-ytap.onrender.com/api/
+
 ## API (Postman)
 
 La documentacion de la API en Postman se guarda dentro del repo en `docs/postman/`.
