@@ -43,6 +43,7 @@ Comandos típicos en Render (si Root Directory es `backend_PF`):
 
 ## DESPLIEGUE DE APLICACIÓN:
   - https://backend-ytap.onrender.com/api/
+  - https://sistemdenotas.netlify.app/
 
 ## API (Postman)
 
